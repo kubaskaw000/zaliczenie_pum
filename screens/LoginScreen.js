@@ -1,9 +1,28 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
+
+const setUserLocation = async (userId) => {
+
+  try {
+    const locations = db.collection('locations');
+
+    alert(1)
+    await locations.add({
+      uid: userId, location: '123'
+    });
+
+  } catch (err) {
+    alert(err)
+  }
+
+
+}
 
 const LoginScreen = () => {
+
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -12,7 +31,7 @@ const LoginScreen = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
-        navigation.replace("Home")
+        navigation.replace("HomeMap")
       }
     })
 
@@ -20,6 +39,7 @@ const LoginScreen = () => {
   }, [])
 
   const handleSignUp = () => {
+
     auth
       .createUserWithEmailAndPassword(email, password)
       .then(userCredentials => {
@@ -29,14 +49,21 @@ const LoginScreen = () => {
       .catch(error => alert(error.message))
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+
     auth
       .signInWithEmailAndPassword(email, password)
       .then(userCredentials => {
         const user = userCredentials.user;
+        try {
+          setUserLocation(user.uid)
+        } catch (err) {
+
+        }
         console.log('Logged in with:', user.email);
       })
       .catch(error => alert(error.message))
+
   }
 
   return (
