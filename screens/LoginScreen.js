@@ -1,27 +1,9 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { auth, db } from '../firebase'
-
-const setUserLocation = async (userId) => {
-
-  try {
-    const locations = db.collection('locations');
-
-    alert(1)
-    await locations.add({
-      uid: userId, location: '123'
-    });
-
-  } catch (err) {
-    alert(err)
-  }
-
-
-}
+import { auth } from '../firebase'
 
 const LoginScreen = () => {
-
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -55,11 +37,6 @@ const LoginScreen = () => {
       .signInWithEmailAndPassword(email, password)
       .then(userCredentials => {
         const user = userCredentials.user;
-        try {
-          setUserLocation(user.uid)
-        } catch (err) {
-
-        }
         console.log('Logged in with:', user.email);
       })
       .catch(error => alert(error.message))
