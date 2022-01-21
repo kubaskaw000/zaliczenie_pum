@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import { auth, db } from '../firebase'
 import Constants from 'expo-constants';
 import firebase from 'firebase/compat/app';
+import { GiftedChat } from 'react-native-gifted-chat'
 import { doc } from 'firebase/firestore';
 
 
@@ -19,6 +20,9 @@ export default function HomeMap() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [followersLocation, setFollowersLocation] = useState([])
     const subscription = useRef(null)
+
+
+    const [messages, setMessages] = useState([]);
 
     const setUserLocation = async (userId) => {
 
@@ -47,7 +51,6 @@ export default function HomeMap() {
         } catch (err) {
             alert(err)
         }
-
     }
 
     const getUserFollows = async (userId) => {
@@ -60,19 +63,17 @@ export default function HomeMap() {
 
     const followUser = (followerId) => {
 
-        db.collection('followers').doc(userId).update({
+        console.log(followerId)
+        console.log(userId)
+        db.collection('followers').doc(userId).set({
             following: firebase.firestore.FieldValue.arrayUnion(followerId)
         });
-
-
     }
 
     const getUserLocation = async (followerId) => {
 
         const userLocation = db.collection('locations').doc(followerId);
-
         const doc = await userLocation.get();
-
         console.log("data + " + doc.data())
 
         return doc.data()
@@ -107,7 +108,9 @@ export default function HomeMap() {
 
         setUserLocation(userId);
 
-        //followUser("AboH70I7bbU3ubmk7Ef9dqYSqx43")
+
+
+        followUser("AboH70I7bbU3ubmk7Ef9dqYSqx43")
 
         // getUserFollows(userId)
         //     .then(function (result) {
@@ -125,6 +128,8 @@ export default function HomeMap() {
         return () => {
             subscription.current?.remove();
         }
+
+
     }, []);
 
     let text = 'Waiting..';
@@ -158,12 +163,21 @@ export default function HomeMap() {
 
                 {followersLocation.map(({ location }, i) =>
                     <MapView.Marker
+
                         key={i}
                         title="YIKES, Inc."
                         description="Web Design and Development"
                         coordinate={{
                             "latitude": location?.coords.latitude ?? 35, "longitude": location?.coords.longitude ?? 22.52
                         }}
+                        onPress={() => {
+                            console.log(userId, followersLocation[i].uid)
+                            navigation.replace("Chat", {
+                                sender_id: userId,
+                                receiver_id: followersLocation[i].uid,
+                            })
+                        }
+                        }
 
                     />
                 )}
@@ -176,6 +190,8 @@ export default function HomeMap() {
                     }}
 
                 />
+
+
 
 
 
