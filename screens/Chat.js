@@ -1,39 +1,71 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { GiftedChat } from 'react-native-gifted-chat'
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { CurrentRenderContext, useNavigation } from '@react-navigation/native'
 import { db } from '../firebase'
 import firebase from 'firebase/compat/app';
 
+// data: date,
+//     message: message,
+//         receiver_id: receiver_id,
+//             sender_id: sender_id
 
-const saveMessage = (sender_id, receiver_id, date, message) => {
 
-    db.collection('messages').doc("messages").update({
-        messages: firebase.firestore.FieldValue.arrayUnion({
-            data: date,
-            message: message,
-            receiver_id: receiver_id,
-            sender_id: sender_id
+const saveMessage = (conversation_id, sender_id, date, message) => {
+    db.collection('chat').doc(conversation_id)
+        .collection('messages').add({
+            sender_id: sender_id,
+            date: date,
+            message: message
         })
-    });
 }
 
-const getMessages = async (sender_id, receiver_id) => {
+const getConversationId = async (sender_id, receiver_id) => {
 
-    const messages = await db.collection('messages').get()
+    const chat = db.collection('chat');
 
-    messages.docs.map(doc => console.log(doc.data())).where;
-
-
-    //console.log(messages)
+    const snapshot = await chat.where('users', 'array-contains-any', [sender_id, receiver_id]).get();
 
 
+    return snapshot.docs[0].id
+}
 
-    //return doc.data()
+const getMessages = async (conversation_id) => {
+
+    let messages = []
+
+    const chat = db.collection('chat')
+
+    const snapshot = await chat.doc(conversation_id).collection('messages').get()
+
+    snapshot.forEach((doc) => {
+
+        const message = doc.data()
+
+        console.log(message.date)
+
+        messages.push(
+            {
+                _id: doc.id,
+                text: message.message,
+                createdAt: message.date.toDate(),
+                user: {
+                    _id: message.sender_id,
+                    name: 'React Native',
+                    avatar: 'https://placeimg.com/140/140/any',
+                },
+            },
+        )
+    })
+
+
+    return messages
 
 }
 
 const Example = (props) => {
+
+    const conv_id = useRef(null)
 
     console.log("sender " + props.route.params.sender_id)
     console.log("receiver " + props.route.params.receiver_id)
@@ -47,36 +79,42 @@ const Example = (props) => {
 
     useEffect(() => {
 
-        getMessages(senderId, receiverId)
+        getConversationId(senderId, receiverId)
             .then(function (result) {
-                console.log(result)
+                conv_id.current = result
+
+                getMessages(result)
+                    .then(function (data) {
+                        setMessages(data)
+                    })
+
+
 
             })
 
-        setMessages([
-            {
-                _id: 1,
-                text: 'Hello developer',
-                createdAt: new Date(),
-                user: {
-                    _id: 2,
-                    name: 'React Native',
-                    avatar: 'https://placeimg.com/140/140/any',
-                },
-            },
-        ])
+        // setMessages([
+        //     {
+        //         _id: 1,
+        //         text: 'Hello developer',
+        //         createdAt: new Date(),
+        //         user: {
+        //             _id: 2,
+        //             name: 'React Native',
+        //             avatar: 'https://placeimg.com/140/140/any',
+        //         },
+        //     },
+        // ])
 
     }, [])
 
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-        console.log(messages[0].text) // wiadomosc
+        //console.log(messages[0].text) // wiadomosc
 
         let date = new Date()
-        saveMessage(senderId, receiverId, date, messages[0].text)
+        saveMessage(conv_id.current, senderId, date, messages[0].text)
 
     }, [])
-
 
     return (
         <>
@@ -94,7 +132,7 @@ const Example = (props) => {
                 messages={messages}
                 onSend={messages => onSend(messages)}
                 user={{
-                    _id: 1,
+                    _id: senderId,
                 }}
             />
         </>

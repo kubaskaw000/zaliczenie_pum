@@ -63,9 +63,9 @@ export default function HomeMap() {
 
     const followUser = (followerId) => {
 
-        console.log(followerId)
-        console.log(userId)
-        db.collection('followers').doc(userId).set({
+        //console.log(followerId)
+        //console.log(userId)
+        db.collection('followers').doc(userId).update({
             following: firebase.firestore.FieldValue.arrayUnion(followerId)
         });
     }
@@ -74,7 +74,7 @@ export default function HomeMap() {
 
         const userLocation = db.collection('locations').doc(followerId);
         const doc = await userLocation.get();
-        console.log("data + " + doc.data())
+        //console.log("data + " + doc.data())
 
         return doc.data()
 
@@ -87,7 +87,7 @@ export default function HomeMap() {
         let locations = []
 
 
-        console.log(followers.following.length);
+        //console.log(followers.following.length);
 
         for (let i = 0; i < followers.following.length; i++) {
             console.log(followers.following[i]);
@@ -102,7 +102,7 @@ export default function HomeMap() {
         getFollowersLocations(userId)
             .then(function (result) {
                 setFollowersLocation(result)
-                console.log(result)
+                //console.log(result)
 
             })
 
@@ -110,7 +110,7 @@ export default function HomeMap() {
 
 
 
-        followUser("AboH70I7bbU3ubmk7Ef9dqYSqx43")
+        //followUser("VUB8ezWqTXPrAuioMHKsir8XmZB2")
 
         // getUserFollows(userId)
         //     .then(function (result) {
@@ -162,16 +162,16 @@ export default function HomeMap() {
             <MapView style={styles.map} >
 
                 {followersLocation.map(({ location }, i) =>
-                    <MapView.Marker
 
+                    <MapView.Marker
                         key={i}
-                        title="YIKES, Inc."
+                        title={followersLocation[i].uid ?? "brak"}
                         description="Web Design and Development"
                         coordinate={{
                             "latitude": location?.coords.latitude ?? 35, "longitude": location?.coords.longitude ?? 22.52
                         }}
                         onPress={() => {
-                            console.log(userId, followersLocation[i].uid)
+                            //console.log(userId, followersLocation[i].uid)
                             navigation.replace("Chat", {
                                 sender_id: userId,
                                 receiver_id: followersLocation[i].uid,
@@ -180,8 +180,9 @@ export default function HomeMap() {
                         }
 
                     />
-                )}
 
+
+                )}
                 <MapView.Marker
                     title="YIKES, Inc."
                     description="Web Design and Development"
