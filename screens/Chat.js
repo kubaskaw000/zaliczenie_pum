@@ -44,7 +44,7 @@ const getMessages = async (conversation_id) => {
 
     const chat = db.collection('chat')
 
-    const snapshot = await chat.doc(conversation_id).collection('messages').get()
+    const snapshot = await chat.doc(conversation_id).collection('messages').orderBy('date', 'desc').get()
 
     snapshot.forEach((doc) => {
 
@@ -105,7 +105,7 @@ const Chat = (props) => {
 
             })
 
-        return () => clearInterval(updateMessageIntevalId)
+        return () => clearInterval(updateMessageIntevalId.current)
 
     }, [])
 

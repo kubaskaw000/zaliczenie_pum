@@ -133,14 +133,6 @@ export default function HomeMap() {
 
     }, []);
 
-    let text = 'Waiting..';
-    if (errorMsg) {
-        text = errorMsg;
-    } else if (location) {
-        text = JSON.stringify(location);
-        //console.log(text)
-    }
-
     const navigation = useNavigation()
 
     const handleSignOut = () => {

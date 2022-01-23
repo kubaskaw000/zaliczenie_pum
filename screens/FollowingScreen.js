@@ -7,7 +7,7 @@ import firebase from 'firebase/compat/app';
 const followUser = (userId, followerId) => {
     //console.log(followerId)
     //console.log(user.uid)
-    db.collection('followers').doc(userId).set({
+    db.collection('followers').doc(userId).update({
         following: firebase.firestore.FieldValue.arrayUnion(followerId)
     });
 
@@ -43,8 +43,6 @@ const FollowingScreen = () => {
                 <TextInput
                     style={styles.input}
                     onChangeText={onChangeText}
-                    placeholder={text}
-                    value={text}
                 />
             </SafeAreaView>
         </View>
