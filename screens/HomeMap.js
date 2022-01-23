@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MapView from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, Image, View, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
 import * as Location from 'expo-location';
 import { auth, db } from '../firebase'
 import Constants from 'expo-constants';
 import firebase from 'firebase/compat/app';
-import { GiftedChat } from 'react-native-gifted-chat'
-import { doc } from 'firebase/firestore';
-
 
 export default function HomeMap() {
 
@@ -181,7 +178,10 @@ export default function HomeMap() {
                         }
                         }
 
-                    />
+                    ><Image
+                        style={styles.avatar}
+                        source={require('../images/demonz.png')}></Image>
+                    </MapView.Marker>
                 )}
 
             </MapView>
@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+
     },
 
 
@@ -206,11 +207,12 @@ const styles = StyleSheet.create({
     },
     button: {
         position: "absolute",
-        width: 100,
+        width: 150,
         height: 100,
         top: 50,
         left: 200,
-        zIndex: 10
+        zIndex: 10,
+        borderRadius: 30
     },
     buttonFollowers: {
         position: "absolute",
@@ -220,11 +222,18 @@ const styles = StyleSheet.create({
         left: 50,
         zIndex: 10
     },
+    avatar: {
+        width: 50,
+        borderRadius: 100,
+        height: 50
+
+    },
     buttonText: {
         position: 'absolute',
         backgroundColor: 'red',
         color: 'white',
         fontWeight: '700',
-        fontSize: 30,
+        fontSize: 25,
+
     },
 });

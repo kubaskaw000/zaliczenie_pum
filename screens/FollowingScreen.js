@@ -2,23 +2,36 @@ import { useNavigation } from '@react-navigation/native'
 import { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView, TextInput } from 'react-native'
 import { auth, db } from '../firebase'
+import QRCode from "react-qr-code"
 import firebase from 'firebase/compat/app';
+import QRScanner from './QRScanner'
 
-const followUser = (userId, followerId) => {
-    //console.log(followerId)
-    //console.log(user.uid)
-    db.collection('followers').doc(userId).update({
-        following: firebase.firestore.FieldValue.arrayUnion(followerId)
-    });
-
-}
 
 const FollowingScreen = () => {
 
     const userId = auth.currentUser.uid
 
+
+    const followUser = (followerId) => {
+        //console.log(followerId)
+        //console.log(user.uid)
+
+        console.log(userId, followerId)
+
+        db.collection('followers').doc(userId).update({
+            following: firebase.firestore.FieldValue.arrayUnion(followerId)
+        });
+
+    }
+
     const [text, onChangeText] = useState(userId);
+    const [showScanner, setShowScanner] = useState(false)
     const navigation = useNavigation()
+
+    if (showScanner == true)
+        return (
+            <QRScanner setShowScanner={setShowScanner} followUser={followUser} />
+        )
 
     return (
         <View style={styles.container}>
@@ -29,22 +42,19 @@ const FollowingScreen = () => {
                 <Text style={styles.buttonText}>Wróć</Text>
             </TouchableOpacity>
 
+            <View>
+                <Text>Twój QR</Text>
+            </View>
+
+
+            <QRCode value={userId} />
+
             <TouchableOpacity
-                onPress={() => {
-                    followUser(userId, text)
-                    console.log(text)
-                }}
+                onPress={() => setShowScanner(true)}
                 style={styles.button}
             >
-                <Text style={styles.buttonText}>Followuj</Text>
+                <Text style={styles.buttonText}>Skanuj QR</Text>
             </TouchableOpacity>
-
-            <SafeAreaView>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={onChangeText}
-                />
-            </SafeAreaView>
         </View>
     )
 }
@@ -71,6 +81,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginTop: 40,
+        marginBottom: 40,
     },
     buttonText: {
         color: 'white',
