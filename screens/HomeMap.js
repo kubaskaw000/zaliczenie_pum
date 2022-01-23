@@ -10,12 +10,11 @@ import { GiftedChat } from 'react-native-gifted-chat'
 import { doc } from 'firebase/firestore';
 
 
-
-
 export default function HomeMap() {
 
     const userId = auth.currentUser.uid;
 
+    console.log(userId)
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const [followersLocation, setFollowersLocation] = useState([])
@@ -44,7 +43,7 @@ export default function HomeMap() {
                 setLocation(loc)
                 const locations = db.collection('locations').doc(userId);
                 locations.set({
-                    uid: userId, location: { coords: { latitude: 50, longitude: 10 } }
+                    uid: userId, location: { coords: { latitude: loc.coords.latitude, longitude: loc.coords.longitude } }
                 });
             });
 
@@ -86,12 +85,14 @@ export default function HomeMap() {
 
         let locations = []
 
-
         //console.log(followers.following.length);
 
         for (let i = 0; i < followers.following.length; i++) {
             console.log(followers.following[i]);
-            locations.push(await getUserLocation(followers.following[i]))
+
+            let location = await getUserLocation(followers.following[i])
+
+            if (location) locations.push(location)
         }
 
         return locations;
@@ -159,6 +160,15 @@ export default function HomeMap() {
             >
                 <Text style={styles.buttonText}>Sign out</Text>
             </TouchableOpacity>
+
+
+            <TouchableOpacity
+                onPress={() => navigation.replace("FollowingScreen")}
+                style={styles.buttonFollowers}
+            >
+                <Text style={styles.buttonText}>follows</Text>
+            </TouchableOpacity>
+
             <MapView style={styles.map} >
 
                 {followersLocation.map(({ location }, i) =>
@@ -180,21 +190,7 @@ export default function HomeMap() {
                         }
 
                     />
-
-
                 )}
-                <MapView.Marker
-                    title="YIKES, Inc."
-                    description="Web Design and Development"
-                    coordinate={{
-                        "latitude": location?.coords.latitude ?? 35, "longitude": location?.coords.longitude ?? 22.52
-                    }}
-
-                />
-
-
-
-
 
             </MapView>
 
@@ -204,13 +200,14 @@ export default function HomeMap() {
 
 const styles = StyleSheet.create({
     container: {
-
         position: "relative",
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
     },
+
+
     map: {
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
@@ -219,10 +216,17 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: 100,
         height: 100,
-        top: Dimensions.get('window').height / 2 - 50,
-        left: Dimensions.get('window').width / 2 - 50,
+        top: 50,
+        left: 200,
         zIndex: 10
-
+    },
+    buttonFollowers: {
+        position: "absolute",
+        width: 100,
+        height: 100,
+        top: 50,
+        left: 50,
+        zIndex: 10
     },
     buttonText: {
         position: 'absolute',

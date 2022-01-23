@@ -27,6 +27,11 @@ const LoginScreen = () => {
       .then(userCredentials => {
         const user = userCredentials.user;
         console.log('Registered with:', user.email);
+
+        db.collection('followers').doc(user.uid).set({
+          following: []
+        })
+
       })
       .catch(error => alert(error.message))
   }

@@ -10,6 +10,7 @@ import firebase from 'firebase/compat/app';
 //         receiver_id: receiver_id,
 //             sender_id: sender_id
 
+const updateMessageInteval = 10 * 1000
 
 const saveMessage = (conversation_id, sender_id, date, message) => {
     db.collection('chat').doc(conversation_id)
@@ -24,8 +25,15 @@ const getConversationId = async (sender_id, receiver_id) => {
 
     const chat = db.collection('chat');
 
-    const snapshot = await chat.where('users', 'array-contains-any', [sender_id, receiver_id]).get();
+    const snapshot = await chat.where('users', 'in', [[sender_id, receiver_id], [receiver_id, sender_id]]).get();
 
+    if (snapshot.docs.length == 0) {
+        const conversation = await db.collection('chat').add({
+            users: [sender_id, receiver_id]
+        })
+
+        return conversation.id
+    }
 
     return snapshot.docs[0].id
 }
@@ -63,9 +71,10 @@ const getMessages = async (conversation_id) => {
 
 }
 
-const Example = (props) => {
+const Chat = (props) => {
 
     const conv_id = useRef(null)
+    const updateMessageIntevalId = useRef(null)
 
     console.log("sender " + props.route.params.sender_id)
     console.log("receiver " + props.route.params.receiver_id)
@@ -77,6 +86,10 @@ const Example = (props) => {
 
     const [messages, setMessages] = useState([]);
 
+    const updateMessages = (convId) => {
+        getMessages(convId).then((data) => setMessages(data))
+    }
+
     useEffect(() => {
 
         getConversationId(senderId, receiverId)
@@ -85,32 +98,19 @@ const Example = (props) => {
 
                 getMessages(result)
                     .then(function (data) {
+
                         setMessages(data)
+                        updateMessageIntevalId.current = setInterval(() => updateMessages(result), updateMessageInteval)
                     })
-
-
 
             })
 
-        // setMessages([
-        //     {
-        //         _id: 1,
-        //         text: 'Hello developer',
-        //         createdAt: new Date(),
-        //         user: {
-        //             _id: 2,
-        //             name: 'React Native',
-        //             avatar: 'https://placeimg.com/140/140/any',
-        //         },
-        //     },
-        // ])
+        return () => clearInterval(updateMessageIntevalId)
 
     }, [])
 
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-        //console.log(messages[0].text) // wiadomosc
-
         let date = new Date()
         saveMessage(conv_id.current, senderId, date, messages[0].text)
 
@@ -124,7 +124,7 @@ const Example = (props) => {
                     style={styles.button}
                     onPress={() => navigation.replace("HomeMap")}
                 >
-                    <Text>Press Here</Text>
+                    <Text>Back</Text>
                 </TouchableOpacity>
             </View>
 
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
         width: 50,
         height: 100,
         justifyContent: "center",
-        backgroundColor: "red"
+
     },
     returnButton: {
         width: 50,
@@ -155,10 +155,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     button: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 5,
         backgroundColor: '#0782F9',
         width: 50,
         height: 30,
     },
 });
 
-export default Example
+export default Chat
